@@ -47,7 +47,8 @@ const schoolController = {
             console.log(error);
             res.status(500).json({ message: "Server Error" });
         }
-    }
+    },
+    
     list: async (req, res) => {
         try {
             const { userLatitude, userLongitude } = req.query;
