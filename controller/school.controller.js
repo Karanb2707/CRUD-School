@@ -48,6 +48,36 @@ const schoolController = {
             res.status(500).json({ message: "Server Error" });
         }
     }
+    list: async (req, res) => {
+        try {
+            const { userLatitude, userLongitude } = req.query;
+
+            if (!userLatitude || !userLongitude) {
+                return res.status(400).json({ message: "User's latitude and longitude are required" });
+            }
+
+            //Fetch all schools from the database
+            const [schools] = await pool.query('SELECT * FROM schools');
+
+            //Sort schools based on distance from the user's location
+            const sortedSchools = schools.map(school => {
+                const schoolCoordinates = { latitude: parseFloat(school.latitude), longitude: parseFloat(school.longitude) };
+                const userCoordinates = { latitude: parseFloat(userLatitude), longitude: parseFloat(userLongitude) };
+
+                const distance = haversine(userCoordinates, schoolCoordinates);
+
+                return {
+                    ...school,
+                    distance
+                };
+            }).sort((a, b) => a.distance - b.distance);
+
+            res.json({ data: sortedSchools });
+        } catch (error) {
+            console.log(error);
+            res.status(500).json({ message: "Server Error" });
+        }
+    }
     
 };
 
